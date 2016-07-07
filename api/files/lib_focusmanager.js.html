@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>lib/focusmanager.js - itsa-react-xxxxx</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="https://avatars0.githubusercontent.com/u/8314644?v=3&amp;s=84" title="itsa-react-xxxxx"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.0.1</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Component.html">Component</a></li>
+                                <li><a href="../classes/FocusManager.html">FocusManager</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                                <li><a href="../modules/component.jsx.html">component.jsx</a></li>
+                                <li><a href="../modules/focusmanager.html">focusmanager</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: lib/focusmanager.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+&quot;use strict&quot;;
+
+/**
+ *
+ *
+ *
+ * &lt;i&gt;Copyright (c) 2014 ITSA - https://github.com/itsa&lt;/i&gt;
+ * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+ *
+ * @module focusmanager
+ * @class FocusManager
+ * @since 0.0.1
+*/
+
+require(&quot;itsa-jsext/lib/object&quot;);
+require(&quot;itsa-jsext/lib/array&quot;);
+require(&quot;itsa-dom&quot;);
+
+const isNode = (typeof global!==&quot;undefined&quot;) &amp;&amp; ({}.toString.call(global)===&quot;[object global]&quot;) &amp;&amp; (!global.document || ({}.toString.call(global.document)!==&quot;[object HTMLDocument]&quot;)),
+    Event = require(&quot;itsa-event&quot;),
+    async = require(&quot;itsa-utils&quot;).async,
+    SPECIAL_KEYS = [
+        &quot;shiftKey&quot;,
+        &quot;ctrlKey&quot;,
+        &quot;metaKey&quot;,
+        &quot;altKey&quot;
+    ],
+    NATIVE_FOCUSSABLE_ELEMENTS = {
+        BUTTON: true,
+        INPUT: true,
+        KEYGEN: true,
+        SELECT: true,
+        TEXTAREA: true
+    },
+    MAIN_CLASS = &quot;itsa-focuscontainer&quot;,
+    FOCUSCONTAINER_CLASS = &quot;.&quot;+MAIN_CLASS,
+    NESTED = MAIN_CLASS+&quot;-nested&quot;,
+    NESTED_CLASS = &quot;.&quot;+NESTED,
+    BLUR = &quot;blur&quot;;
+
+if (!isNode) {
+    const nodeBlurred = function(e) {
+        const node = e.target;
+        if (node &amp;&amp; node.hasAttribute &amp;&amp; node.hasAttribute(&quot;itsa_dynamic_tabindex&quot;)) {
+            node.removeAttribute(&quot;itsa_dynamic_tabindex&quot;);
+            node.removeAttribute(&quot;tabIndex&quot;);
+        }
+    };
+    if (window.addEventListener) {
+        window.addEventListener(BLUR, nodeBlurred, true);
+    }
+    else {
+        window.attachEvent(&quot;on&quot;+BLUR, nodeBlurred);
+    }
+}
+
+const specialKeyPressed = e =&gt; {
+    let specialKeyPressed = false;
+    SPECIAL_KEYS.some(value =&gt; {
+        specialKeyPressed = !!e[value];
+        return specialKeyPressed;
+    });
+    return specialKeyPressed;
+};
+
+const checkSpecialKeyMatch = (specialKeys, e) =&gt; {
+    let allMatch;
+    SPECIAL_KEYS.some(value =&gt; {
+        let partOfSpecialKeys = specialKeys.itsa_contains(value);
+        allMatch = (!!e[value]===partOfSpecialKeys);
+        return !allMatch;
+    });
+    return allMatch;
+};
+
+const directionMatch = (keys, e) =&gt; {
+    let match = false;
+    const keyCode = e.keyCode;
+    keys.some(keyObj =&gt; {
+        if (keyObj.key===keyCode) {
+            // also check special key-match
+            match = (keyObj.special &amp;&amp; checkSpecialKeyMatch(keyObj.special, e)) || (!keyObj.special &amp;&amp; !specialKeyPressed(e));
+        }
+        return match;
+    });
+    return match;
+};
+
+const tabIndexesBehind = (a, b) =&gt; {
+    let tabA = a.hasAttribute(&quot;itsa_dynamic_tabindex&quot;) ? -1 : (a.getAttribute(&quot;tabIndex&quot;) || -1),
+        tabB = b.hasAttribute(&quot;itsa_dynamic_tabindex&quot;) ? -1 : (b.getAttribute(&quot;tabIndex&quot;) || -1);
+    // be aware that &#x60;getAttribute&#x60; returns either &#x60;undefined&#x60; or a &#x60;string&#x60;
+    tabA = parseInt(tabA, 10);
+    tabB = parseInt(tabB, 10);
+    if (tabA&lt;tabB) {
+        return -1;
+    }
+    if (tabA&gt;tabB) {
+        return 1;
+    }
+    return 0;
+};
+
+const getFocussableNodes = (container, selector) =&gt; {
+    let nodes, node, len, i, tabIndex;
+    selector += &quot;,&quot;+NESTED_CLASS;
+    nodes = Array.prototype.filter.call(container.itsa_getAll(selector), node =&gt; {
+        const insideContainer = node.itsa_inside(FOCUSCONTAINER_CLASS),
+              insideOwnSelector = node.itsa_inside(selector);
+        return ((insideContainer===container) &amp;&amp;
+                !node.hasAttribute(&quot;data-itsa-fm-nofocus&quot;) &amp;&amp;
+                (node.itsa_getStyle(&quot;display&quot;)!==&quot;none&quot;) &amp;&amp;
+                (node.itsa_getStyle(&quot;visibility&quot;)!==&quot;hidden&quot;) &amp;&amp;
+                !node.hasAttribute(&quot;disabled&quot;) &amp;&amp;
+                !node.hasAttribute(&quot;readonly&quot;) &amp;&amp;
+                !node.itsa_hasClass(&quot;disabled&quot;) &amp;&amp;
+                !node.itsa_hasClass(&quot;readonly&quot;) &amp;&amp;
+                (!insideOwnSelector || (insideContainer===insideOwnSelector) || !insideContainer.contains(insideOwnSelector)));
+    });
+    // next, we might need to order them in case &quot;tabIndex&quot; is set on some nodes:
+    Array.prototype.sort.call(nodes, tabIndexesBehind);
+    // now reshuffle and set those with a tab on the right place
+    len = nodes.length;
+    for (i=0; i&lt;len; i++) {
+        node = nodes[i];
+        tabIndex = node.getAttribute(&quot;tabIndex&quot;) || -1;
+        // be aware that &#x60;getAttribute&#x60; returns either &#x60;undefined&#x60; or a &#x60;string&#x60;
+        tabIndex = parseInt(tabIndex, 10);
+        if ((tabIndex&gt;=0) &amp;&amp; !node.hasAttribute(&quot;itsa_dynamic_tabindex&quot;)) {
+            nodes.itsa_insertAt(node, tabIndex);
+        }
+    }
+    return nodes;
+};
+
+const handleKey = function(component, e) {
+    let nextIndex, count, activeElement, focussableNodes, getNextIndex,
+        parentcontainer, nestedcomponent, parentcomponent, getCurrentSelectedIndex;
+    const props = component.props,
+        selector = props.selector,
+        loop = props.loop,
+        transitionTime = props.transitionTime,
+        container = component._domNode,
+        disabled = props.disabled,
+        keyCode = e.keyCode;
+
+    getCurrentSelectedIndex = focussableNodes =&gt; {
+        let index = focussableNodes.indexOf(activeElement);
+        if (index&gt;-1) {
+            return index;
+        }
+        // now we check if it a descendent
+        focussableNodes.some((node, i) =&gt; {
+            if (node.contains(activeElement)) {
+                index = i;
+            }
+            return (index&gt;-1);
+        });
+        return index;
+    },
+
+    getNextIndex = (down, container, selector) =&gt; {
+        focussableNodes = getFocussableNodes(container, selector);
+        nextIndex = getCurrentSelectedIndex(focussableNodes) + (down ? 1 : -1);
+        count = focussableNodes.length;
+        if (down ? (nextIndex&gt;=count) : (nextIndex&lt;0)) {
+            nextIndex = (loop &amp;&amp; (count&gt;0)) &amp;&amp; (down ? 0 : count-1);
+        }
+        return nextIndex;
+    };
+    (keyCode===9) &amp;&amp; e.preventDefault();
+    if (disabled) {
+        return;
+    }
+    activeElement = document.activeElement;
+    if (activeElement.itsa_inside(FOCUSCONTAINER_CLASS)!==container) {
+        return;
+    }
+    if (directionMatch(component._keysDown, e)) {
+        // keyDown direction
+        nextIndex = getNextIndex(true, container, selector);
+    }
+    else if (directionMatch(component._keysUp, e)) {
+        // keyUp direction
+        nextIndex = getNextIndex(false, container, selector);
+    }
+    if ((typeof nextIndex!==&quot;number&quot;) &amp;&amp; props.refocusOnEnterInput &amp;&amp; (keyCode===13) &amp;&amp; (e.target.tagName===&quot;INPUT&quot;) &amp;&amp; !e.target.hasAttribute(&quot;data-itsa-fm-nofocusonenter&quot;)) {
+        // &#x27;enter-key&#x27; is pressed on an input-element
+        nextIndex = getNextIndex(true, container, selector);
+    }
+    if (typeof nextIndex===&quot;number&quot;) {
+        // focussing active focuscontainer
+        setFocus({
+            component,
+            node: focussableNodes[nextIndex],
+            transitionTime,
+            focussableNodes
+        });
+    }
+    else if (directionMatch(component._keysLeave, e)) {
+        // exitting nested focuscontainer
+        parentcontainer = container.itsa_inside(FOCUSCONTAINER_CLASS);
+        if (parentcontainer) {
+            parentcomponent = parentcontainer._itsa_focuscontainer;
+            setFocus({
+                component: parentcomponent,
+                node: container,
+                transitionTime: parentcomponent.props.transitionTime,
+                focussableNodes
+            });
+        }
+    }
+    else if ((activeElement.itsa_hasClass(NESTED)) &amp;&amp; (activeElement!==container)) {
+        // nested container
+        nestedcomponent = activeElement._itsa_focuscontainer;
+        if (nestedcomponent) {
+            if (directionMatch(nestedcomponent._keysEnter, e)) {
+                // focussing item inside nested focuscontainer
+                setFocus({
+                    component: nestedcomponent,
+                    index: nestedcomponent.state.index,
+                    transitionTime: nestedcomponent.props.transitionTime,
+                    focussableNodes
+                });
+            }
+        }
+    }
+};
+
+const setFocus = (config) =&gt; {
+    const payload = {
+        component: config.component,
+        nodeOrIndex: config.node || config.index,
+        transitionTime: config.transitionTime,
+        focussableNodes: config.focussableNodes
+    };
+    Event.emit(&quot;focusmanager:focus&quot;, payload);
+};
+
+const defaultFnSetFocus = function(e) {
+    let node, nextIndex;
+    const component = e.component,
+        nodeOrIndex = e.nodeOrIndex,
+        transitionTime = e.transitionTime,
+        props = component.props,
+        selector = props.selector,
+        container = component._domNode,
+        focussableNodes = e.focussableNodes || getFocussableNodes(container, selector);
+    if (focussableNodes.length===0) {
+        nextIndex = null;
+        node = container;
+    }
+    else {
+        if (typeof nodeOrIndex===&quot;number&quot;) {
+            node = focussableNodes[nodeOrIndex];
+            nextIndex = nodeOrIndex;
+        }
+        else {
+            node = nodeOrIndex;
+            nextIndex = focussableNodes.indexOf(node);
+        }
+        if (!focussableNodes.itsa_contains(node)) {
+            nextIndex = 0;
+            node = focussableNodes[0];
+        }
+    }
+    if (node.setAttribute) {
+        if (!NATIVE_FOCUSSABLE_ELEMENTS[node.tagName] &amp;&amp; !node.hasAttribute(&quot;tabIndex&quot;)) {
+            node.setAttribute(&quot;tabIndex&quot;, 0);
+            node.setAttribute(&quot;itsa_dynamic_tabindex&quot;, &quot;true&quot;);
+        }
+        // store the index in case the component looses its focus by itself, then we can reset the right index later on:
+        component.setState({
+            index: nextIndex,
+            noResync: true // will not resync the component
+        });
+        return new Promise(resolve =&gt; {
+            // we need to go async, otherwise the &#x60;focus&#x60;-event won&#x27;t trigger a resync,
+            // because &#x60;state.noResync&#x60; would still be &#x60;true&#x60;.
+            async(() =&gt; {
+                if (node===document.activeElement) {
+                    node.itsa_scrollIntoView(null, null, transitionTime);
+                }
+                else {
+                    node.itsa_focus(null, null, transitionTime);
+                }
+                resolve(true);
+            });
+        });
+    }
+    else {
+        return Promise.resolve(false);
+    }
+};
+
+Event.defineEvent(&quot;focusmanager:focus&quot;).defaultFn(defaultFnSetFocus);
+
+module.exports = {
+    getFocussableNodes,
+    handleKey,
+    setFocus
+};
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

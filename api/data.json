@@ -1,0 +1,354 @@
+{
+    "project": {
+        "name": "itsa-react-xxxxx",
+        "description": "React-Component: xxxxx",
+        "logo": "https://avatars0.githubusercontent.com/u/8314644?v=3&s=84",
+        "version": "0.0.1"
+    },
+    "files": {
+        "lib/component.jsx": {
+            "name": "lib/component.jsx",
+            "modules": {
+                "component.jsx": 1
+            },
+            "classes": {
+                "Component": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "lib/focusmanager.js": {
+            "name": "lib/focusmanager.js",
+            "modules": {
+                "focusmanager": 1
+            },
+            "classes": {
+                "FocusManager": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        }
+    },
+    "modules": {
+        "component.jsx": {
+            "name": "component.jsx",
+            "submodules": {},
+            "elements": {},
+            "classes": {
+                "Component": 1
+            },
+            "fors": {},
+            "namespaces": {},
+            "tag": "module",
+            "file": "lib/component.jsx",
+            "line": 3,
+            "description": "Description here\n\n\n\n<i>Copyright (c) 2016 ItsAsbreuk - http://itsasbreuk.nl</i><br>\nNew BSD License - http://choosealicense.com/licenses/bsd-3-clause/",
+            "since": "15.0.0"
+        },
+        "focusmanager": {
+            "name": "focusmanager",
+            "submodules": {},
+            "elements": {},
+            "classes": {
+                "FocusManager": 1
+            },
+            "fors": {},
+            "namespaces": {},
+            "tag": "module",
+            "file": "lib/focusmanager.js",
+            "line": 3,
+            "description": "<i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>\n New BSD License - http://choosealicense.com/licenses/bsd-3-clause/",
+            "since": "0.0.1"
+        }
+    },
+    "classes": {
+        "Component": {
+            "name": "Component",
+            "shortname": "Component",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "component.jsx",
+            "namespace": "",
+            "file": "lib/component.jsx",
+            "line": 3,
+            "description": "Description here\n\n\n\n<i>Copyright (c) 2016 ItsAsbreuk - http://itsasbreuk.nl</i><br>\nNew BSD License - http://choosealicense.com/licenses/bsd-3-clause/"
+        },
+        "FocusManager": {
+            "name": "FocusManager",
+            "shortname": "FocusManager",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "focusmanager",
+            "namespace": "",
+            "file": "lib/focusmanager.js",
+            "line": 3,
+            "description": "<i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>\n New BSD License - http://choosealicense.com/licenses/bsd-3-clause/"
+        }
+    },
+    "elements": {},
+    "classitems": [
+        {
+            "file": "lib/component.jsx",
+            "line": 45,
+            "description": "The Component its children",
+            "itemtype": "property",
+            "name": "children",
+            "type": "Object || Array",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 54,
+            "description": "The classname for the container",
+            "itemtype": "property",
+            "name": "className",
+            "type": "String",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 63,
+            "description": "Whether the focuscontainer is disabled (doesn't response to focusevents)",
+            "itemtype": "property",
+            "name": "disabled",
+            "type": "Boolean",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 72,
+            "description": "Whether a click on the container (outside its elements,\nshould lead into focussing the container",
+            "itemtype": "property",
+            "name": "focusOnContainerClick",
+            "default": "false",
+            "type": "Boolean",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 83,
+            "description": "A `selector` or `index` of the focussable items that should get the initial focus.\nIn case of a selector, it might return multiple nodes: the one that is being used\nis determined by",
+            "itemtype": "property",
+            "name": "initialFocus",
+            "type": "String|Number",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 94,
+            "description": "In case `initialFocus` is a selector, it might return multiple nodes: the one that is being used.\nIn case of \"last\", it will return the last node.",
+            "itemtype": "property",
+            "name": "initialFocusIndex",
+            "type": "Number|\"last\"",
+            "default": "0",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 105,
+            "description": "What key/keys are responsible for re-focussing `down`. Valid values are charcodes possible prepende with\na special key: 9 or `shift+9` or `ctrl+shift+9`. Multiple key combinations can be defined bydefining an array of keyDown-values.",
+            "itemtype": "property",
+            "name": "keyDown",
+            "default": "9",
+            "type": "String|number|Array",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 116,
+            "description": "Whenever `keyEnter` is set, then the focus-container will become a `nested`- focuscontainer.\nNested focuscontainers will automaticcaly become focussable by their parent-container.\n\nThe `keyEnter` determines what key/keys are responsible for `entering` this container. Valid values are charcodes possible prepende with\na special key: 39 or `shift+39` or `ctrl+shift+39`. Multiple key combinations can be defined bydefining an array of keyUp-values.",
+            "itemtype": "property",
+            "name": "keyEnter",
+            "type": "String|number|Array",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 129,
+            "description": "The `keyLeave` determines what key/keys are responsible for `leaving` this container and go to the parent focus-container.\nValid values are charcodes possible prepende with\na special key: 39 or `shift+39` or `ctrl+shift+39`. Multiple key combinations can be defined bydefining an array of keyUp-values.",
+            "itemtype": "property",
+            "name": "keyLeave",
+            "default": "27",
+            "type": "String|number|Array",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 141,
+            "description": "What key/keys are responsible for re-focussing `up`. Valid values are charcodes possible prepended with\na special key: 9 or `shift+9` or `ctrl+shift+9`. Multiple key combinations can be defined bydefining an array of keyUp-values.",
+            "itemtype": "property",
+            "name": "keyUp",
+            "default": "\"shift+9\"",
+            "type": "String|number|Array",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 152,
+            "description": "Whether the loop the focus when the last/first item is reached.",
+            "itemtype": "property",
+            "name": "loop",
+            "default": "true",
+            "type": "Boolean",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 162,
+            "description": "Callback for when the component did mount.",
+            "itemtype": "property",
+            "name": "onMount",
+            "type": "Function",
+            "since": "15.0.8",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 171,
+            "description": "Whether to focus on the next item whenever a `enter` is pressed on an input-element.",
+            "itemtype": "property",
+            "name": "refocusOnEnterInput",
+            "default": "true",
+            "type": "Boolean",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 181,
+            "description": "Selector on which the focusmanager should check against when refocussing",
+            "itemtype": "property",
+            "name": "selector",
+            "type": "String",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 190,
+            "description": "Inline styles for the focus-container",
+            "itemtype": "property",
+            "name": "style",
+            "type": "Object",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 199,
+            "description": "The tabIndex",
+            "itemtype": "property",
+            "name": "tabIndex",
+            "type": "Number",
+            "since": "0.0.1",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 208,
+            "description": "The transition-time when the window needs to be scrolled in order to get the focussable node into the view.",
+            "itemtype": "property",
+            "name": "transitionTime",
+            "type": "Number",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 218,
+            "description": "componentDidMount will set an eventlistener to the `app:passwordresetrequest`-event",
+            "itemtype": "method",
+            "name": "componentDidMount",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 257,
+            "description": "Extracts this.props.keyUp and this.props.keyDown into an array of `objects`\nand defines them into this._keysUp and this._keysDown.",
+            "itemtype": "method",
+            "name": "defineMovementKeys",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 306,
+            "description": "Sets the focus on the active Element of the Container.",
+            "itemtype": "method",
+            "name": "focusActiveElement",
+            "chainable": 1,
+            "since": "0.0.1",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 322,
+            "description": "Sets the focus on the specified Element of the Container.",
+            "itemtype": "method",
+            "name": "focusElement",
+            "params": [
+                {
+                    "name": "index",
+                    "description": "the index of the item to be focussed",
+                    "type": "Number"
+                }
+            ],
+            "chainable": 1,
+            "since": "0.0.1",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 443,
+            "description": "React render-method --> renderes the Component.",
+            "itemtype": "method",
+            "name": "render",
+            "return": {
+                "description": "ReactComponent"
+            },
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        }
+    ],
+    "warnings": []
+}
