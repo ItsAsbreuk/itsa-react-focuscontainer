@@ -46,10 +46,10 @@ const Component = React.createClass({
          * The Component its children
          *
          * @property children
-         * @type Object || Array
+         * @type String || Object || Array
          * @since 15.0.0
         */
-        children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+        children: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.array]),
 
         /**
          * The classname for the container
