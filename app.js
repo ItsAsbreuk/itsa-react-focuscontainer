@@ -37,8 +37,7 @@ ReactDOM.render(
 // );
 
 import "purecss";
-import "itsa-jsext/lib/object";
-import "itsa-jsext/lib/string";
+import "itsa-jsext";
 
 import "itsa-react-input/css/component.scss";
 import "itsa-react-input/css/purecss-component.scss";
@@ -55,7 +54,18 @@ const Input = require("itsa-react-input"),
 /*******************************************************
  * Custom form-Component
  *******************************************************/
-const MyForm = React.createClass({
+class MyForm extends React.Component {
+    constructor(props) {
+        super(props);
+        const instance = this;
+        instance.state = {
+            formValid: false,
+            formValidated: false
+        };
+        instance.focusUnvalidated = instance.focusUnvalidated.bind(instance);
+        instance.formValid = instance.formValid.bind(instance);
+        instance.handleSubmit = instance.handleSubmit.bind(instance);
+    }
 
     focusUnvalidated() {
         const instance = this;
@@ -75,20 +85,12 @@ const MyForm = React.createClass({
         else if (!validated.termsAccepted) {
             instance.refs.terms.focus();
         }
-    },
+    }
 
     formValid() {
         const validated = this.props.validated;
         return validated.name && validated.email && validated.phone  && validated.password && validated.termsAccepted;
-    },
-
-    getInitialState() {
-        return {
-            formValid: false,
-            formValidated: false
-        };
-    },
-
+    }
 
     handleSubmit(e) {
         const formValid = this.formValid();
@@ -101,7 +103,7 @@ const MyForm = React.createClass({
             formValid,
             target: this
         });
-    },
+    }
 
     render() {
         let formClass = "pure-form pure-form-stacked";
@@ -119,7 +121,6 @@ const MyForm = React.createClass({
         return (
             <FocusContainer
                 className={formClass}
-                onSubmit={this.handleSubmit}
                 selector=".itsa-input, .itsa-checkbox, button"
                 transitionTime={1000} >
                 {validatedMsg}
@@ -199,8 +200,8 @@ const MyForm = React.createClass({
                     </div>
                     <button
                         className="pure-button pure-button-primary"
-                        tabIndex={8}
-                        type="submit" >
+                        onClick={this.handleSubmit}
+                        tabIndex={8} >
                         Validate Form
                     </button>
                 </fieldset>
@@ -208,7 +209,7 @@ const MyForm = React.createClass({
         );
     }
 
-});
+}
 
 
 /*******************************************************

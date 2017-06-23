@@ -15,11 +15,11 @@
 */
 
 require("itsa-dom");
-require("itsa-jsext/lib/string");
+require("itsa-jsext");
 
 const React = require("react"),
     ReactDOM = require("react-dom"),
-    PropTypes = React.PropTypes,
+    PropTypes = require("prop-types"),
     MAIN_CLASS = "itsa-focuscontainer",
     MAIN_CLASS_PREFIX = MAIN_CLASS+"-",
     FOCUSCONTAINER_CLASS = "."+MAIN_CLASS,
@@ -39,192 +39,25 @@ const React = require("react"),
         alt: "altKey"
     };
 
-const Component = React.createClass({
-
-    propTypes: {
-        /**
-         * The Component its children
-         *
-         * @property children
-         * @type String || Object || Array
-         * @since 15.0.0
-        */
-        children: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.array]),
-
-        /**
-         * The classname for the container
-         *
-         * @property className
-         * @type String
-         * @since 15.0.0
-        */
-        className: PropTypes.string,
-
-        /**
-         * Whether the focuscontainer is disabled (doesn't response to focusevents)
-         *
-         * @property disabled
-         * @type Boolean
-         * @since 15.0.0
-        */
-        disabled: PropTypes.bool,
-
-        /**
-         * Whether a click on the container (outside its elements,
-         * should lead into focussing the container
-         *
-         * @property focusOnContainerClick
-         * @default false
-         * @type Boolean
-         * @since 15.0.10
-        */
-        focusOnContainerClick: PropTypes.bool,
-
-        /**
-         * A `selector` or `index` of the focussable items that should get the initial focus.
-         * In case of a selector, it might return multiple nodes: the one that is being used
-         * is determined by
-         *
-         * @property initialFocus
-         * @type String|Number
-         * @since 15.0.0
-        */
-        initialFocus: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-
-        /**
-         * In case `initialFocus` is a selector, it might return multiple nodes: the one that is being used.
-         * In case of "last", it will return the last node.
-         *
-         * @property initialFocusIndex
-         * @type Number|"last"
-         * @default 0
-         * @since 15.0.0
-        */
-        initialFocusIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-
-        /**
-         * What key/keys are responsible for re-focussing `down`. Valid values are charcodes possible prepende with
-         * a special key: 9 or `shift+9` or `ctrl+shift+9`. Multiple key combinations can be defined bydefining an array of keyDown-values.
-         *
-         * @property keyDown
-         * @default 9
-         * @type String|number|Array
-         * @since 15.0.0
-        */
-        keyDown: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.array]),
-
-        /**
-         * Whenever `keyEnter` is set, then the focus-container will become a `nested`- focuscontainer.
-         * Nested focuscontainers will automaticcaly become focussable by their parent-container.
-         *
-         * The `keyEnter` determines what key/keys are responsible for `entering` this container. Valid values are charcodes possible prepende with
-         * a special key: 39 or `shift+39` or `ctrl+shift+39`. Multiple key combinations can be defined bydefining an array of keyUp-values.
-         *
-         * @property keyEnter
-         * @type String|number|Array
-         * @since 15.0.0
-        */
-        keyEnter: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.array]),
-
-        /**
-         * The `keyLeave` determines what key/keys are responsible for `leaving` this container and go to the parent focus-container.
-         * Valid values are charcodes possible prepende with
-         * a special key: 39 or `shift+39` or `ctrl+shift+39`. Multiple key combinations can be defined bydefining an array of keyUp-values.
-         *
-         * @property keyLeave
-         * @default 27
-         * @type String|number|Array
-         * @since 15.0.0
-        */
-        keyLeave: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.array]),
-
-        /**
-         * What key/keys are responsible for re-focussing `up`. Valid values are charcodes possible prepended with
-         * a special key: 9 or `shift+9` or `ctrl+shift+9`. Multiple key combinations can be defined bydefining an array of keyUp-values.
-         *
-         * @property keyUp
-         * @default "shift+9"
-         * @type String|number|Array
-         * @since 15.0.0
-        */
-        keyUp: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.array]),
-
-        /**
-         * Whether the loop the focus when the last/first item is reached.
-         *
-         * @property loop
-         * @default true
-         * @type Boolean
-         * @since 15.0.0
-        */
-        loop: PropTypes.bool,
-
-        /**
-         * Callback whenever the focuscontainer gets clicked. The callback recieves 2 arguments:
-         * e {Object} --> eventobject
-         * nested {Boolean} --> whether the click happened inside a nested focus-container
-         *
-         * @property onClick
-         * @type Function
-         * @since 0.0.1
-        */
-        onClick: PropTypes.func,
-
-        /**
-         * Callback for when the component did mount.
-         *
-         * @property onMount
-         * @type Function
-         * @since 15.0.8
-        */
-        onMount: PropTypes.func,
-
-        /**
-         * Whether to focus on the next item whenever a `enter` is pressed on an input-element.
-         *
-         * @property refocusOnEnterInput
-         * @default true
-         * @type Boolean
-         * @since 15.0.0
-        */
-        refocusOnEnterInput: PropTypes.bool,
-
-        /**
-         * Selector on which the focusmanager should check against when refocussing
-         *
-         * @property selector
-         * @type String
-         * @since 15.0.0
-        */
-        selector: PropTypes.string,
-
-        /**
-         * Inline styles for the focus-container
-         *
-         * @property style
-         * @type Object
-         * @since 15.0.0
-        */
-        style: PropTypes.object,
-
-        /**
-         * The tabIndex
-         *
-         * @property tabIndex
-         * @type Number
-         * @since 0.0.1
-        */
-        tabIndex: PropTypes.number,
-
-        /**
-         * The transition-time when the window needs to be scrolled in order to get the focussable node into the view.
-         *
-         * @property transitionTime
-         * @type Number
-         * @since 15.0.0
-        */
-        transitionTime: PropTypes.number
-    },
+class Component extends React.Component {
+    constructor(props) {
+        super(props);
+        const instance = this;
+        instance.state = {
+            index: 0,
+            focussed: false,
+            hasActiveFocus: false
+        };
+        instance.defineMovementKeys = instance.defineMovementKeys.bind(instance);
+        instance.focusActiveElement = instance.focusActiveElement.bind(instance);
+        instance.focusElement = instance.focusElement.bind(instance);
+        instance.getFocussableNodes = instance.getFocussableNodes.bind(instance);
+        instance.handleBlur = instance.handleBlur.bind(instance);
+        instance.handleClick = instance.handleClick.bind(instance);
+        instance.handleFocus = instance.handleFocus.bind(instance);
+        instance.isNestedContainer = instance.isNestedContainer.bind(instance);
+        instance.setInitialFocus = instance.setInitialFocus.bind(instance);
+    }
 
     /**
      * componentDidMount will set an eventlistener to the `app:passwordresetrequest`-event
@@ -244,7 +77,7 @@ const Component = React.createClass({
             instance.setInitialFocus();
         }
         onMount && onMount();
-    },
+    }
 
     componentDidUpdate() {
         // VERY IMPORTANT: when re-rendered, the content might be changed.
@@ -260,11 +93,11 @@ const Component = React.createClass({
                 transitionTime: this.props.transitionTime
             });
         }
-    },
+    }
 
     componentWillUpdate() {
         this.defineMovementKeys();
-    },
+    }
 
     /**
      * Extracts this.props.keyUp and this.props.keyDown into an array of `objects`
@@ -313,7 +146,7 @@ const Component = React.createClass({
         // next keyLeave:
         Array.isArray(keyLeave) || (keyLeave=[keyLeave]);
         this._keysLeave = getObjectArray(keyLeave);
-    },
+    }
 
     /**
      * Sets the focus on the active Element of the Container.
@@ -329,7 +162,7 @@ const Component = React.createClass({
             index: instance.state.index,
             transitionTime: instance.props.transitionTime
         });
-    },
+    }
 
     /**
      * Sets the focus on the specified Element of the Container.
@@ -347,39 +180,18 @@ const Component = React.createClass({
             index: index,
             transitionTime: instance.props.transitionTime
         });
-    },
-
-    getDefaultProps() {
-        return {
-            focusOnContainerClick: false,
-            initialFocusIndex: 0,
-            keyUp: "shift+9", // shift-tab
-            keyDown: 9, // tab
-            keyLeave: 27, // esc
-            loop: true,
-            refocusOnEnterInput: true,
-            selector: "input, button, select, textarea, [contenteditable=\"true\"], .focusable, [data-focussable=\"true\"]"
-        };
-    },
+    }
 
     getFocussableNodes() {
         return focusmanager.getFocussableNodes(this._domNode, this.props.selector);
-    },
-
-    getInitialState() {
-        return {
-            index: 0,
-            focussed: false,
-            hasActiveFocus: false
-        };
-    },
+    }
 
     handleBlur() {
         this.setState({
             focussed: false,
             hasActiveFocus: false
         });
-    },
+    }
 
     handleClick(e) {
         let parentNode, newIndex, newNode, containerClick, checkContainerClick, nested;
@@ -422,7 +234,7 @@ const Component = React.createClass({
             });
         }
         onClick && onClick(e, node.itsa_inside(FOCUSCONTAINER_CLASS)!==container);
-    },
+    }
 
     handleFocus(e) {
         let newState, match, focussableNodes;
@@ -449,11 +261,11 @@ const Component = React.createClass({
         // we will remove this value asyncroniously:
         async(() => delete instance._updatedFromHandleFocus);
         instance.setState(newState);
-    },
+    }
 
     isNestedContainer() {
         return !!this.props.keyEnter;
-    },
+    }
 
     /**
      * React render-method --> renderes the Component.
@@ -484,7 +296,7 @@ const Component = React.createClass({
                 {props.children}
             </div>
         );
-    },
+    }
 
     setInitialFocus() {
         let nodes, index, initialFocus;
@@ -502,7 +314,7 @@ const Component = React.createClass({
             initialFocus = instance.getFocussableNodes().indexOf(nodes[index]);
         }
         instance.focusElement(initialFocus);
-    },
+    }
 
     shouldComponentUpdate(nextProps, nextState) {
         const shouldUpdate = !nextState.noResync;
@@ -510,6 +322,213 @@ const Component = React.createClass({
         return shouldUpdate;
     }
 
-});
+}
+
+Component.propTypes = {
+    /**
+     * The Component its children
+     *
+     * @property children
+     * @type String || Object || Array
+     * @since 15.0.0
+    */
+    children: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.array]),
+
+    /**
+     * The classname for the container
+     *
+     * @property className
+     * @type String
+     * @since 15.0.0
+    */
+    className: PropTypes.string,
+
+    /**
+     * Whether the focuscontainer is disabled (doesn't response to focusevents)
+     *
+     * @property disabled
+     * @type Boolean
+     * @since 15.0.0
+    */
+    disabled: PropTypes.bool,
+
+    /**
+     * Whether a click on the container (outside its elements,
+     * should lead into focussing the container
+     *
+     * @property focusOnContainerClick
+     * @default false
+     * @type Boolean
+     * @since 15.0.10
+    */
+    focusOnContainerClick: PropTypes.bool,
+
+    /**
+     * A `selector` or `index` of the focussable items that should get the initial focus.
+     * In case of a selector, it might return multiple nodes: the one that is being used
+     * is determined by
+     *
+     * @property initialFocus
+     * @type String|Number
+     * @since 15.0.0
+    */
+    initialFocus: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+
+    /**
+     * In case `initialFocus` is a selector, it might return multiple nodes: the one that is being used.
+     * In case of "last", it will return the last node.
+     *
+     * @property initialFocusIndex
+     * @type Number|"last"
+     * @default 0
+     * @since 15.0.0
+    */
+    initialFocusIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+
+    /**
+     * What key/keys are responsible for re-focussing `down`. Valid values are charcodes possible prepende with
+     * a special key: 9 or `shift+9` or `ctrl+shift+9`. Multiple key combinations can be defined bydefining an array of keyDown-values.
+     *
+     * @property keyDown
+     * @default 9
+     * @type String|number|Array
+     * @since 15.0.0
+    */
+    keyDown: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.array]),
+
+    /**
+     * Whenever `keyEnter` is set, then the focus-container will become a `nested`- focuscontainer.
+     * Nested focuscontainers will automaticcaly become focussable by their parent-container.
+     *
+     * The `keyEnter` determines what key/keys are responsible for `entering` this container. Valid values are charcodes possible prepende with
+     * a special key: 39 or `shift+39` or `ctrl+shift+39`. Multiple key combinations can be defined bydefining an array of keyUp-values.
+     *
+     * @property keyEnter
+     * @type String|number|Array
+     * @since 15.0.0
+    */
+    keyEnter: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.array]),
+
+    /**
+     * The `keyLeave` determines what key/keys are responsible for `leaving` this container and go to the parent focus-container.
+     * Valid values are charcodes possible prepende with
+     * a special key: 39 or `shift+39` or `ctrl+shift+39`. Multiple key combinations can be defined bydefining an array of keyUp-values.
+     *
+     * @property keyLeave
+     * @default 27
+     * @type String|number|Array
+     * @since 15.0.0
+    */
+    keyLeave: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.array]),
+
+    /**
+     * What key/keys are responsible for re-focussing `up`. Valid values are charcodes possible prepended with
+     * a special key: 9 or `shift+9` or `ctrl+shift+9`. Multiple key combinations can be defined bydefining an array of keyUp-values.
+     *
+     * @property keyUp
+     * @default "shift+9"
+     * @type String|number|Array
+     * @since 15.0.0
+    */
+    keyUp: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.array]),
+
+    /**
+     * Whether the loop the focus when the last/first item is reached.
+     *
+     * @property loop
+     * @default true
+     * @type Boolean
+     * @since 15.0.0
+    */
+    loop: PropTypes.bool,
+
+    /**
+     * Callback whenever the focuscontainer gets clicked. The callback recieves 2 arguments:
+     * e {Object} --> eventobject
+     * nested {Boolean} --> whether the click happened inside a nested focus-container
+     *
+     * @property onClick
+     * @type Function
+     * @since 0.0.1
+    */
+    onClick: PropTypes.func,
+
+    /**
+     * Callback for when the component did mount.
+     *
+     * @property onMount
+     * @type Function
+     * @since 15.0.8
+    */
+    onMount: PropTypes.func,
+
+    /**
+     * Whether to focus on the next item whenever a `enter` is pressed on an input-element.
+     *
+     * @property refocusOnEnterInput
+     * @default true
+     * @type Boolean
+     * @since 15.0.0
+    */
+    refocusOnEnterInput: PropTypes.bool,
+
+    /**
+     * Whether the focussed item should be scrolled into the view when the focusselector focuses it.
+     *
+     * @property scrollIntoView
+     * @default true
+     * @type String
+     * @since 15.0.30
+    */
+    scrollIntoView: PropTypes.bool,
+
+    /**
+     * Selector on which the focusmanager should check against when refocussing
+     *
+     * @property selector
+     * @type String
+     * @since 15.0.0
+    */
+    selector: PropTypes.string,
+
+    /**
+     * Inline styles for the focus-container
+     *
+     * @property style
+     * @type Object
+     * @since 15.0.0
+    */
+    style: PropTypes.object,
+
+    /**
+     * The tabIndex
+     *
+     * @property tabIndex
+     * @type Number
+     * @since 0.0.1
+    */
+    tabIndex: PropTypes.number,
+
+    /**
+     * The transition-time when the window needs to be scrolled in order to get the focussable node into the view.
+     *
+     * @property transitionTime
+     * @type Number
+     * @since 15.0.0
+    */
+    transitionTime: PropTypes.number
+};
+
+Component.defaultProps = {
+    focusOnContainerClick: false,
+    initialFocusIndex: 0,
+    keyUp: "shift+9", // shift-tab
+    keyDown: 9, // tab
+    keyLeave: 27, // esc
+    loop: true,
+    refocusOnEnterInput: true,
+    scrollIntoView: true,
+    selector: "input, button, select, textarea, [contenteditable=\"true\"], .focusable, [data-focussable=\"true\"]"
+};
 
 module.exports = Component;

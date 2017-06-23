@@ -97,13 +97,13 @@
  * @since 0.0.1
 */
 
-require(&quot;itsa-jsext/lib/object&quot;);
-require(&quot;itsa-jsext/lib/array&quot;);
+require(&quot;itsa-jsext&quot;);
 require(&quot;itsa-dom&quot;);
 
-const isNode = (typeof global!==&quot;undefined&quot;) &amp;&amp; ({}.toString.call(global)===&quot;[object global]&quot;) &amp;&amp; (!global.document || ({}.toString.call(global.document)!==&quot;[object HTMLDocument]&quot;)),
+const utils = require(&quot;itsa-utils&quot;),
+    isNode = utils.isNode,
     Event = require(&quot;itsa-event&quot;),
-    async = require(&quot;itsa-utils&quot;).async,
+    async = utils.async,
     SPECIAL_KEYS = [
         &quot;shiftKey&quot;,
         &quot;ctrlKey&quot;,
@@ -116,6 +116,10 @@ const isNode = (typeof global!==&quot;undefined&quot;) &amp;&amp; ({}.toString.c
         KEYGEN: true,
         SELECT: true,
         TEXTAREA: true
+    },
+    PAGE_SCROLL_KEYS = {
+        38: true, // arrowUp
+        40: true // arrowDown
     },
     MAIN_CLASS = &quot;itsa-focuscontainer&quot;,
     FOCUSCONTAINER_CLASS = &quot;.&quot;+MAIN_CLASS,
@@ -158,36 +162,40 @@ const checkSpecialKeyMatch = (specialKeys, e) =&gt; {
     return allMatch;
 };
 
-const directionMatch = (keys, e) =&gt; {
+const directionMatch = (keys, e, forbiddenKeys) =&gt; {
     let match = false;
     const keyCode = e.keyCode;
     keys.some(keyObj =&gt; {
         if (keyObj.key===keyCode) {
             // also check special key-match
-            match = (keyObj.special &amp;&amp; checkSpecialKeyMatch(keyObj.special, e)) || (!keyObj.special &amp;&amp; !specialKeyPressed(e));
+            match = !forbiddenKeys[keyCode] &amp;&amp;
+                    ((keyObj.special &amp;&amp; checkSpecialKeyMatch(keyObj.special, e)) ||
+                     (!keyObj.special &amp;&amp; !specialKeyPressed(e)));
         }
         return match;
     });
+    if (match &amp;&amp; PAGE_SCROLL_KEYS[keyCode]) {
+        e.preventDefault(); // no scroll of the page!
+    }
     return match;
 };
 
-const tabIndexesBehind = (a, b) =&gt; {
-    let tabA = a.hasAttribute(&quot;itsa_dynamic_tabindex&quot;) ? -1 : (a.getAttribute(&quot;tabIndex&quot;) || -1),
-        tabB = b.hasAttribute(&quot;itsa_dynamic_tabindex&quot;) ? -1 : (b.getAttribute(&quot;tabIndex&quot;) || -1);
-    // be aware that &#x60;getAttribute&#x60; returns either &#x60;undefined&#x60; or a &#x60;string&#x60;
-    tabA = parseInt(tabA, 10);
-    tabB = parseInt(tabB, 10);
-    if (tabA&lt;tabB) {
-        return -1;
-    }
-    if (tabA&gt;tabB) {
+const tabIndexesOrder = (a, b) =&gt; {
+    let tabA = parseInt(a.getAttribute(&quot;tabIndex&quot;), 10),
+        tabB = parseInt(b.getAttribute(&quot;tabIndex&quot;), 10);
+    if (tabB&lt;tabA) {
+        // put the new item &#x60;b&#x60; before previous item &#x60;a&#x60;
         return 1;
+    }
+    if (tabB&gt;tabA) {
+        // put the new item &#x60;b&#x60; behind previous item &#x60;a&#x60;
+        return -1;
     }
     return 0;
 };
 
 const getFocussableNodes = (container, selector) =&gt; {
-    let nodes, node, len, i, tabIndex;
+    let nodes, nodesWithoutTabIndexes, nodesWithTabIndexes, len, nextTabIndex;
     selector += &quot;,&quot;+NESTED_CLASS;
     nodes = Array.prototype.filter.call(container.itsa_getAll(selector), node =&gt; {
         const insideContainer = node.itsa_inside(FOCUSCONTAINER_CLASS),
@@ -202,24 +210,51 @@ const getFocussableNodes = (container, selector) =&gt; {
                 !node.itsa_hasClass(&quot;readonly&quot;) &amp;&amp;
                 (!insideOwnSelector || (insideContainer===insideOwnSelector) || !insideContainer.contains(insideOwnSelector)));
     });
-    // next, we might need to order them in case &quot;tabIndex&quot; is set on some nodes:
-    Array.prototype.sort.call(nodes, tabIndexesBehind);
-    // now reshuffle and set those with a tab on the right place
+    // now we create 2 intermediate arrays:
+    // 1. those who have the &#x60;tabIndex&#x60; not set
+    // 2. those who have the &#x60;tabIndex&#x60; set
+    nodesWithoutTabIndexes = [];
+    nodesWithTabIndexes = [];
+    nodes.forEach(node =&gt; {
+        let tabIndex = node.hasAttribute(&quot;itsa_dynamic_tabindex&quot;) ? undefined : node.getAttribute(&quot;tabIndex&quot;);
+        if (typeof tabIndex===&quot;string&quot;) {
+            nodesWithTabIndexes.push(node);
+        }
+        else {
+            nodesWithoutTabIndexes.push(node);
+        }
+    });
+    // now, we order the nodelist with tabindexes:
+    Array.prototype.sort.call(nodesWithTabIndexes, tabIndexesOrder);
+    // Last step: we create a new list with all items in the right order:
     len = nodes.length;
-    for (i=0; i&lt;len; i++) {
-        node = nodes[i];
-        tabIndex = node.getAttribute(&quot;tabIndex&quot;) || -1;
-        // be aware that &#x60;getAttribute&#x60; returns either &#x60;undefined&#x60; or a &#x60;string&#x60;
-        tabIndex = parseInt(tabIndex, 10);
-        if ((tabIndex&gt;=0) &amp;&amp; !node.hasAttribute(&quot;itsa_dynamic_tabindex&quot;)) {
-            nodes.itsa_insertAt(node, tabIndex);
+    nodes.itsa_makeEmpty(); // reuse this array
+    while (nodes.length&lt;len) {
+        if (nodesWithTabIndexes.length===0) {
+            // no more nodes with tabIndexes --&gt; fill &#x60;nodes&#x60; with remaining nodesWithoutTabIndexes
+            Array.prototype.push.apply(nodes, nodesWithoutTabIndexes);
+        }
+        else if (nodesWithoutTabIndexes.length===0) {
+            // no more nodes with tabIndexes --&gt; fill &#x60;nodes&#x60; with remaining nodesWithTabIndexes
+            Array.prototype.push.apply(nodes, nodesWithTabIndexes);
+        }
+        else {
+            nextTabIndex = parseInt(nodesWithTabIndexes[0].getAttribute(&quot;tabIndex&quot;), 10);
+            if (nextTabIndex&lt;=nodes.length) {
+                // take node from &#x60;nodesWithTabIndexes&#x60;, add it to the &#x60;nodes&#x60; array and remove it from the &#x60;nodesWithTabIndexes&#x60;-array:
+                nodes.push(nodesWithTabIndexes.shift());
+            }
+            else {
+                // take node from &#x60;nodesWithTabIndexes&#x60;, add it to the &#x60;nodes&#x60; array and remove it from the &#x60;nodesWithTabIndexes&#x60;-array:
+                nodes.push(nodesWithoutTabIndexes.shift());
+            }
         }
     }
     return nodes;
 };
 
 const handleKey = function(component, e) {
-    let nextIndex, count, activeElement, focussableNodes, getNextIndex,
+    let nextIndex, count, activeElement, focussableNodes, getNextIndex, tagName, forbiddenKeys,
         parentcontainer, nestedcomponent, parentcomponent, getCurrentSelectedIndex;
     const props = component.props,
         selector = props.selector,
@@ -261,11 +296,38 @@ const handleKey = function(component, e) {
     if (activeElement.itsa_inside(FOCUSCONTAINER_CLASS)!==container) {
         return;
     }
-    if (directionMatch(component._keysDown, e)) {
+    // be aware that arrow-key NEVER should match when the focus is set on an input/text/editable element!
+    tagName = activeElement.tagName;
+    if (tagName===&quot;INPUT&quot;) {
+        forbiddenKeys = {
+            37: true, // arrowLeft
+            39: true  // arrowRight
+        };
+    }
+    else if (tagName===&quot;TEXTAREA&quot;) {
+        forbiddenKeys = {
+            37: true, // arrowLeft
+            39: true // arrowRight
+        };
+        ((activeElement.selectionStart!==0) || activeElement.selectionEnd) &amp;&amp; (forbiddenKeys[38]=true); // arrowUp
+        (activeElement.selectionStart&lt;activeElement.textLength) &amp;&amp; (forbiddenKeys[40]=true); // arrowDown
+    }
+    else if (activeElement.isContentEditable) {
+        forbiddenKeys = {
+            37: true, // arrowLeft
+            38: true, // arrowUp
+            39: true, // arrowRight
+            40: true // arrowDown
+        };
+    }
+    else {
+        forbiddenKeys = {};
+    }
+    if (directionMatch(component._keysDown, e, forbiddenKeys)) {
         // keyDown direction
         nextIndex = getNextIndex(true, container, selector);
     }
-    else if (directionMatch(component._keysUp, e)) {
+    else if (directionMatch(component._keysUp, e, forbiddenKeys)) {
         // keyUp direction
         nextIndex = getNextIndex(false, container, selector);
     }
@@ -282,7 +344,7 @@ const handleKey = function(component, e) {
             focussableNodes
         });
     }
-    else if (directionMatch(component._keysLeave, e)) {
+    else if (directionMatch(component._keysLeave, e, forbiddenKeys)) {
         // exitting nested focuscontainer
         parentcontainer = container.itsa_inside(FOCUSCONTAINER_CLASS);
         if (parentcontainer) {
@@ -299,7 +361,7 @@ const handleKey = function(component, e) {
         // nested container
         nestedcomponent = activeElement._itsa_focuscontainer;
         if (nestedcomponent) {
-            if (directionMatch(nestedcomponent._keysEnter, e)) {
+            if (directionMatch(nestedcomponent._keysEnter, e, forbiddenKeys)) {
                 // focussing item inside nested focuscontainer
                 setFocus({
                     component: nestedcomponent,
@@ -367,7 +429,12 @@ const defaultFnSetFocus = function(e) {
                     node.itsa_scrollIntoView(null, null, transitionTime);
                 }
                 else {
-                    node.itsa_focus(null, null, transitionTime);
+                    if (props.scrollIntoView) {
+                        node.itsa_focus &amp;&amp; node.itsa_focus(null, null, transitionTime);
+                    }
+                    else {
+                        node.focus();
+                    }
                 }
                 resolve(true);
             });
