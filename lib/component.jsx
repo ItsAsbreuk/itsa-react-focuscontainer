@@ -18,7 +18,6 @@ require("itsa-dom");
 require("itsa-jsext");
 
 const React = require("react"),
-    ReactDOM = require("react-dom"),
     PropTypes = require("prop-types"),
     MAIN_CLASS = "itsa-focuscontainer",
     MAIN_CLASS_PREFIX = MAIN_CLASS+"-",
@@ -69,7 +68,6 @@ class Component extends React.Component {
         const instance = this,
             props = instance.props,
             onMount = props.onMount;
-        instance._domNode = ReactDOM.findDOMNode(instance);
         instance._domNode._itsa_focuscontainer = instance; // to have a reference to the instance
         // on every render-cycle, we need to re-calculate this._keysUp and this._keysDown:
         instance.defineMovementKeys();
@@ -291,6 +289,7 @@ class Component extends React.Component {
                 onClick={instance.handleClick}
                 onFocus={instance.handleFocus}
                 onKeyDown={focusmanager.handleKey.bind(null, instance)}
+                ref={node => instance._domNode = node}
                 style={props.style}
                 tabIndex={props.tabIndex} >
                 {props.children}
@@ -527,7 +526,7 @@ Component.defaultProps = {
     keyLeave: 27, // esc
     loop: true,
     refocusOnEnterInput: true,
-    scrollIntoView: true,
+    scrollIntoView: false,
     selector: "input, button, select, textarea, [contenteditable=\"true\"], .focusable, [data-focussable=\"true\"]"
 };
 
