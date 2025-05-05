@@ -1,6 +1,6 @@
 {
   "name": "itsa-react-focuscontainer",
-  "version": "16.0.4",
+  "version": "16.0.9",
   "description": "React component: focussable container that managed the focus",
   "author": [
     {
@@ -34,10 +34,10 @@
     "lib": "./lib"
   },
   "dependencies": {
-    "itsa-dom": "^1.2.0",
-    "itsa-event": "^1.1.10",
-    "itsa-jsext": "^1.4.0",
-    "itsa-utils": "^1.4.0",
+    "itsa-dom": "^1.2.2",
+    "itsa-event": "^1.1.12",
+    "itsa-jsext": "^2.0.2",
+    "itsa-utils": "^1.4.1",
     "prop-types": "^15.5.10"
   },
   "peerDependencies": {
@@ -56,10 +56,10 @@
     "eslint-plugin-react": "^7.1.0",
     "file-loader": "^0.8.5",
     "istanbul": "^0.3.0",
-    "itsa-react-checkbox": "^16.0.3",
-    "itsa-react-input": "^16.0.3",
-    "itsa-react-maskedinput": "^16.0.4",
-    "itsa-react-textarea": "^16.0.3",
+    "itsa-react-checkbox": "^16.0.4",
+    "itsa-react-input": "^16.1.1",
+    "itsa-react-maskedinput": "^16.1.1",
+    "itsa-react-textarea": "^16.1.1",
     "jsdom": "^7.2.2",
     "jsdom-global": "^1.6.1",
     "jshint": "^2.5.5",
